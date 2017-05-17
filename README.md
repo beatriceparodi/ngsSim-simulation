@@ -128,13 +128,17 @@ Parameter | Usage
 
 `$ANGSD/angsd -glf $SIM_DATA/testA.glf.gz -fai $SIM_DATA/testAF.ANC.fas.fai -nInd 30 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 1 -doSaf 1 -anc $SIM_DATA/testAF.ANC.fas -out testA`
 
+*Check the table below for the parameters*
 
-`-nInd` number of individuals
-`-doMajorMinor` specification of how to assign the major and minor alleles
-`-doMaf` estimate allele frequencies
-`-doPost` calculate posterior probability of genotypes
-`-doGeno` assign genotype probabilities at each site for each individual
-`-doSaf` sample allele frequency based analysis
+
+Parameter | Usage
+----------| -----
+`-nInd`| Number of individuals
+`-doMajorMinor`| Specification of how to assign the major and minor alleles
+`-doMaf`| Estimate allele frequencies
+`-doPost` | Calculate posterior probability of genotypes
+`-doGeno` | Assign genotype probabilities at each site for each individual
+`-doSaf` | Sample allele frequency based analysis
 
 
 
