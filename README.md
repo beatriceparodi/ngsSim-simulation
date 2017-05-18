@@ -147,7 +147,7 @@ You can use data that you have collected or you can simulate your own dataset wi
 Recalling what we have done so far, here some more in-depth detailes about ANGSD commands.
 
 
-* `-doGeno` will assign genotype probabilities at each site for each individuals.
+`-doGeno` will assign genotype probabilities at each site for each individuals.
 Different options are available for this:
           
  * `-doGeno1` print major and minor alleles
@@ -160,13 +160,13 @@ Different options are available for this:
 *You can combine the output by summing the numbers. For instance,* `-doGeno9`*(1+8) will gives you the major and minor alleles and the probability for the genotypes [(MM), (Mm), (mm)]*
 
 
-* `-doPost` will calculate the posterior probability of genotypes defined by a choosen model. Again different options are available:
+`-doPost` will calculate the posterior probability of genotypes defined by a choosen model. Again different options are available:
 
  * `-doPost1` will use frequency as a prior
  * `-doPost2` will use uniform prior
 
 
-* `-doMaf` will estimate  minor allele frequencies. You can estimate allele frequencies by:
+`-doMaf` will estimate  minor allele frequencies. You can estimate allele frequencies by:
 
  * `-doMaf1` calculate the frequency of major and minor allele, based on EM     algorithm with genotypes likelihood
  * `-doMaf2` calculate frequency with only fixed major and unknown minor allele
@@ -174,7 +174,7 @@ Different options are available for this:
     `-doMaf8` calculate frequencies based in allele counts
 
 
-* `-doMajorMinor` will nallow you to assign the major and minor alleles. Options are available:
+`-doMajorMinor` will nallow you to assign the major and minor alleles. Options are available:
 
  * `-doMajorMinor1` major and minor inferred from GL
  * `-doMajorMinor2` major and minor inferred from allele counts
@@ -183,7 +183,7 @@ Different options are available for this:
  * `-doMajorMInor5` ancestral allele as major (anc- FILE)
        
 
-* `-GL` specify the genotype likelihood model that you are interested in. In this case, we are going to use SAMtools, with `-GL1`
+`-GL` specify the genotype likelihood model that you are interested in. In this case, we are going to use SAMtools, with `-GL1`
     
 2. Before running the analyses remember to unzip the files that you want to use (in my case the file with the whole population) with `gunzip`: 
 
