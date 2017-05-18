@@ -50,10 +50,8 @@ Here my parameters:
   
 1. First, set the sites number
 
-
 `NSITES=10000`
 
-`echo $NSITES`
 
 2. Second, what about the depth?
 If you want to generate data with all the same depth, for instance 4x, you`ll have -depth 4. Otherwise, if you want to generate data with individual depths per line, here what you need to do:
@@ -62,10 +60,7 @@ If you want to generate data with all the same depth, for instance 4x, you`ll ha
 
 `DEPTH=Data/depths.txt`
 
-`echo $DEPTH`
-
   * Create a file with individual depths per line. In this example, I want to generate a file with repetition of 2x and 5x per 30 individuals.
-
 
 `declare -a seq1=(2 5 2 5 2 5)`
 
@@ -79,7 +74,7 @@ If you want to generate data with all the same depth, for instance 4x, you`ll ha
 
 `do`
 
-	for i in `seq 1 ${repeat[l]}`
+	`for i in `seq 1 ${repeat[l]}`
 
 	`do`
 
@@ -93,7 +88,6 @@ If you want to generate data with all the same depth, for instance 4x, you`ll ha
 
 
 3. Run the simulation with ngsSim, and **make sure to remember your directories**
-
 
 `$NGSTOOLS/ngsSim/ngsSim -outfiles Data/pop -npop 3 -nind 10 10 10 -nsites $NSITES -depth $DEPTH -errate 0.01 -pvar 0.10 -mfreq 0.005 -F 0.1 0.3 -model 1 -base_freq 0.25 0.25 0.25 0.25 -seed 12345 2> /dev/null`
 
@@ -124,11 +118,11 @@ Parameter | Usage
 
 `$SAMTOOLS faidx Data/ref.fasta`
 
-5. Now that we have the data, we want to investigate them using `ANGSD`
+5. Now that we have a dataset, we want to investigate it using `ANGSD`
 
-`$ANGSD/angsd -glf $SIM_DATA/testA.glf.gz -fai $SIM_DATA/testAF.ANC.fas.fai -nInd 30 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 1 -doSaf 1 -anc $SIM_DATA/testAF.ANC.fas -out testA`
+`$ANGSD/angsd -glf Data/pop.glf.gz -fai Data/ref.fasta.fai -nInd 30 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 1 -doSaf 1 -anc data/ref.fasta -out testA`
 
-*Check the table below for the parameters*
+*Check the table below for parameters*
 
 
 Parameter | Usage
@@ -141,9 +135,61 @@ Parameter | Usage
 `-doSaf` | Sample allele frequency based analysis
 
 
+## Principal Component Analysis (PCA)
+### How to perform a PCA with your data
+PCA is a useful tool when analysing genetic low-depth data.
+This statistical method will allow you to reduce your measurements into few principal components (PCs) that will explain the main pattern in your dataset (Reich, Prince & Patterson, 2008).
+
+*You`ll find more detailed info about PCA in this link* [http://www.nature.com/ng/journal/v40/n5/full/ng0508-491.html]
+
+1. To perform a PCA we first need a set of data.
+You can use data that you have collected or you can simulate your own dataset with ngsSim.
+Recalling what we have done so far, here some more in-depth detailes about ANGSD commands.
 
 
+* `-doGeno` will assign genotype probabilities at each site for each individuals.
+Different options are available for this:
+          
+    `-doGeno1` print major and minor alleles
+    `-doGeno2` print called genotype encoded (-1,0,1,2)
+    `-doGeno4` print called genotype directly (AA,AC,AG)
+    `-doGeno8` posterior probability of all possible genotypes
+    `-doGeno16` posterior probability of called genotype
+    `-doGeno32` posterior probability of called genotype as binary
 
+*You can combine the output by summing the numbers. For instance,* `-doGeno9`*(1+8) will gives you the major and minor alleles and the probability for the genotypes [(MM), (Mm), (mm)]*
+
+
+* `-doPost` will calculate the posterior probability of genotypes defined by a choosen model. Again different options are available:
+
+    `-doPost1` will use frequency as a prior
+    `-doPost2` will use uniform prior
+
+
+* `-doMaf` will estimate  minor allele frequencies. You can estimate allele frequencies by:
+
+    `-doMaf1` calculate the frequency of major and minor allele, based on EM     algorithm with genotypes likelihood
+    `-doMaf2` calculate frequency with only fixed major and unknown minor allele
+    `-doMaf4` calculate the frequencies directly from genotype posterior probabilities
+    `-doMaf8` calculate frequencies based in allele counts
+
+
+* `-doMajorMinor` will nallow you to assign the major and minor alleles. Options are available:
+
+    `-doMajorMinor1` major and minor inferred from GL
+    `-doMajorMinor2` major and minor inferred from allele counts
+    `-doMajorMinor3` use major and minor specified in a file (sites- FILE)
+    `-doMajorMinor4` reference allele as major (ref- FILE)
+    `-doMajorMInor5` ancestral allele as major (anc- FILE)
+       
+
+* `-GL` specify the genotype likelihood model that you are interested in. In this case, we are going to use SAMtools, with `-GL1`
+    
+2. Before running the analyses remember to unzip the files that you want to use (in my case the file with the whole population) with `gunzip`: 
+
+`gunzip Data/pop.glf.gz`
+
+`$ANGSD/angsd -P 3 -b Data/pop.glf -ref Data/ref.fasta.fai -out results/all  -r chrSIM:1-100 -GL 1 -doMajorMinor 1 -doMaf 1 -doGeno 1 -doPost 1`
 
 
 
