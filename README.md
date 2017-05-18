@@ -150,37 +150,37 @@ Recalling what we have done so far, here some more in-depth detailes about ANGSD
 * `-doGeno` will assign genotype probabilities at each site for each individuals.
 Different options are available for this:
           
-    `-doGeno1` print major and minor alleles
-    `-doGeno2` print called genotype encoded (-1,0,1,2)
-    `-doGeno4` print called genotype directly (AA,AC,AG)
-    `-doGeno8` posterior probability of all possible genotypes
-    `-doGeno16` posterior probability of called genotype
-    `-doGeno32` posterior probability of called genotype as binary
+ * `-doGeno1` print major and minor alleles
+ * `-doGeno2` print called genotype encoded (-1,0,1,2)
+ * `-doGeno4` print called genotype directly (AA,AC,AG)
+ * `-doGeno8` posterior probability of all possible genotypes
+ * `-doGeno16` posterior probability of called genotype
+ * `-doGeno32` posterior probability of called genotype as binary
 
 *You can combine the output by summing the numbers. For instance,* `-doGeno9`*(1+8) will gives you the major and minor alleles and the probability for the genotypes [(MM), (Mm), (mm)]*
 
 
 * `-doPost` will calculate the posterior probability of genotypes defined by a choosen model. Again different options are available:
 
-    `-doPost1` will use frequency as a prior
-    `-doPost2` will use uniform prior
+ * `-doPost1` will use frequency as a prior
+ * `-doPost2` will use uniform prior
 
 
 * `-doMaf` will estimate  minor allele frequencies. You can estimate allele frequencies by:
 
-    `-doMaf1` calculate the frequency of major and minor allele, based on EM     algorithm with genotypes likelihood
-    `-doMaf2` calculate frequency with only fixed major and unknown minor allele
+ * `-doMaf1` calculate the frequency of major and minor allele, based on EM     algorithm with genotypes likelihood
+ * `-doMaf2` calculate frequency with only fixed major and unknown minor allele
     `-doMaf4` calculate the frequencies directly from genotype posterior probabilities
     `-doMaf8` calculate frequencies based in allele counts
 
 
 * `-doMajorMinor` will nallow you to assign the major and minor alleles. Options are available:
 
-    `-doMajorMinor1` major and minor inferred from GL
-    `-doMajorMinor2` major and minor inferred from allele counts
-    `-doMajorMinor3` use major and minor specified in a file (sites- FILE)
-    `-doMajorMinor4` reference allele as major (ref- FILE)
-    `-doMajorMInor5` ancestral allele as major (anc- FILE)
+ * `-doMajorMinor1` major and minor inferred from GL
+ * `-doMajorMinor2` major and minor inferred from allele counts
+ * `-doMajorMinor3` use major and minor specified in a file (sites- FILE)
+ * `-doMajorMinor4` reference allele as major (ref- FILE)
+ * `-doMajorMInor5` ancestral allele as major (anc- FILE)
        
 
 * `-GL` specify the genotype likelihood model that you are interested in. In this case, we are going to use SAMtools, with `-GL1`
