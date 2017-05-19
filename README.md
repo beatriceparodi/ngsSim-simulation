@@ -193,8 +193,8 @@ and then we can calculate the genotype probabilities. In this specific case, sin
 
 `$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/all -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -doGeno 32 -doPost 1`
 
-## sites that are actually variable in our sample SNP calling
-difference in na single DNA nucleotide (for instance, a replacement of a base with another) 
+If we need to filter sites that are actually variable (for instance, replacement of a base with another) in our samples, wee need to add SNP_pval, as shown below:
+ 
 `$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out SNP/SNPall -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -SNP_pval 1e-3 -doGeno 32 -doPost 1`
 
 You can use the command `-r` if you want to filter the data. In my case I am only analysing chromosome 1-100
@@ -203,8 +203,8 @@ You can use the command `-r` if you want to filter the data. In my case I am onl
 
 `$NGSTOOLS/ngsPopGen/ngsCovar -probfile results/ALL.geno -outfile results/matrix.covar -nind 30 -nsites 10000 -call 0 -norm 0 &> /dev/null`
 
-####with SNP
-Since we performed a SNP calling, how many sites we are taking into consideration after that?(581 in my case). We can see it with these commands
+If we performed a SNP calling, we need to know how many sites we are taking into consideration (581 in my case). We can see them  with these commands
+
 `less -S SNP/SNPall.mafs.gz`
 `N_SITES=`zcat SNP/SNPall.mafs.gz | tail -n+2 | wc -l``
 `echo $N_SITES`
@@ -223,10 +223,16 @@ With the following commands, we are going to transform our matrix into a canonic
 `Rscript $NGSTOOLS/Scripts/plotPCA.R -i results/matrix.covar -c 1-2 -a results/ALL.clst -o results/ALL.pca.pdf`
 
 `evince results/ALL.pca.pdf`
-##SNP calling changing the files name
 
-5. Here our plot without filters![ALL.pca.pdf]
-Here the plot with the SNP calling ![SNPALL.pca.pdf]
+ *We can run the same commands changing the input and output files if we performed the SNP calling*
+
+5. Here our plot without filters ![ALL.pca.pdf]
+6. Here the plot with the SNP calling ![SNPALL.pca.pdf]
+
+##Admixture proportions
+###How to calculate admixture proportions with NGSadmix 
+
+
 
 
 
