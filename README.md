@@ -4,19 +4,19 @@
 ngsSim will allow you to simulate NEXT-GENERATION SEQUENCING (NGS) data for up to 3 populations, taking into account different variables (number of sites, sequencing error rates, sequencing or individual depths, FST value).
 Also, using the command -expand you will be able to simulate population expansion.
 
-ngsSim will outcomes different files:
+ngsSim will outputs different files:
 * true genotype files for the whole population and n files for each population 
 * reads files 
 * genotypes likelihoods
 
 #### Settings directories
 
-1. First of all, **make sure that you have set your directories**. This will allow you to easily understand where your data and your results are. For instance, my directories are: 
+1. First of all, **make sure that you have set your directories**. This will allow you to easily understand where data and results are. For instance, my directories are: 
 
 
 `mkdir Data`
 
-`mkdir Results`
+`mkdir results`
 
 
 2. Now we need to set directories for all programs that we are going to use in this simulation. 
@@ -54,7 +54,7 @@ Here my parameters:
 
 
 2. Second, what about the depth?
-If you want to generate data with all the same depth, for instance 4x, you`ll have -depth 4. Otherwise, if you want to generate data with individual depths per line, here what you need to do:
+If you want to generate data with all the same depth, for instance 4x, you`ll have `-depth 4` . Otherwise, if you want to generate data with individual depths per line, here what you need to do:
 
   * Set a path for your depths with 
 
@@ -138,9 +138,9 @@ Parameter | Usage
 ## Principal Component Analysis (PCA)
 ### How to perform a PCA with your data
 PCA is a useful tool when analysing genetic low-depth data.
-This statistical method will allow you to reduce your measurements into few principal components (PCs) that will explain the main pattern in your dataset (Reich, Prince & Patterson, 2008).
+This statistical method will allow you to reduce your measurements into few principal components (PCs) that will explain the main pattern in your dataset (Reich, Prince & Patterson, 2008). It is a linear transformation that chooses a new system of coordinates from your original dataset, and creates new axis called principal components.
 
-*You`ll find more detailed info about PCA in this link* [http://www.nature.com/ng/journal/v40/n5/full/ng0508-491.html]
+You`ll find more detailed info about PCA in this [link] (http://www.nature.com/ng/journal/v40/n5/full/ng0508-491.html)
 
 1. To perform a PCA we first need a set of data.
 You can use data that you have collected or you can simulate your own dataset with ngsSim.
@@ -157,7 +157,7 @@ Different options are available for this:
  * `-doGeno16` posterior probability of called genotype
  * `-doGeno32` posterior probability of called genotype as binary
 
-*You can combine the output by summing the numbers. For instance,* `-doGeno9`*(1+8) will gives you the major and minor alleles and the probability for the genotypes [(MM), (Mm), (mm)]*
+You can combine the output by summing the numbers. For instance, `-doGeno9`(1+8) will gives you the major and minor alleles and the probability for the genotypes [(MM), (Mm), (mm)]
 
 
 `-doPost` will calculate the posterior probability of genotypes defined by a choosen model. Again different options are available:
@@ -185,22 +185,48 @@ Different options are available for this:
 
 `-GL` specify the genotype likelihood model that you are interested in. In this case, we are going to use SAMtools, with `-GL1`
     
-2. Before running the analyses remember to unzip the files that you want to use (in my case the file with the whole population) with `gunzip`: 
+2. Before running the analyses remember to unzip the files that you want to use (for instance,I'm going to use the whole population) with `gunzip`: 
 
 `gunzip Data/pop.glf.gz`
 
-`$ANGSD/angsd -P 3 -b Data/pop.glf -ref Data/ref.fasta.fai -out results/all  -r chrSIM:1-100 -GL 1 -doMajorMinor 1 -doMaf 1 -doGeno 1 -doPost 1`
+and then we can calculate the genotype probabilities. In this specific case, since we need a binary file for the PCA, we must specify `-doGeno32`. So the command line will be:
 
+`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/all -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -doGeno 32 -doPost 1`
 
+## sites that are actually variable in our sample SNP calling
+difference in na single DNA nucleotide (for instance, a replacement of a base with another) 
+`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out SNP/SNPall -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -SNP_pval 1e-3 -doGeno 32 -doPost 1`
 
+You can use the command `-r` if you want to filter the data. In my case I am only analysing chromosome 1-100
 
+3. ngsCovar will allow us to estimate the covariance matrix between individuals based on genotypes probabilities. Since the data are simulated, I am not using any filter, and I can type the initial number of sites (NSITES=10000).
 
+`$NGSTOOLS/ngsPopGen/ngsCovar -probfile results/ALL.geno -outfile results/matrix.covar -nind 30 -nsites 10000 -call 0 -norm 0 &> /dev/null`
 
+####with SNP
+Since we performed a SNP calling, how many sites we are taking into consideration after that?(581 in my case). We can see it with these commands
+`less -S SNP/SNPall.mafs.gz`
+`N_SITES=`zcat SNP/SNPall.mafs.gz | tail -n+2 | wc -l``
+`echo $N_SITES`
 
+Then we can run the matrix calculation
 
+`$NGSTOOLS/ngsPopGen/ngsCovar -probfile SNP/SNPall.geno -outfile SNP/SNPmatrix.covar -nind 30 -nsites $N_SITES -call 0 -norm 0 &> /dev/null`
 
+Here,looking at the outup, we can see a NxN symmetric matrix with N individials 
 
+4. Now that we have our covariance matrix, we can use the command `Rscript` to perform a PCA plot in R directly from our terminal.
+With the following commands, we are going to transform our matrix into a canonical form, then create a cluster file (.clst) and plot the results.
 
+`Rscript -e 'write.table(cbind(seq(1,30),rep(1,30),c(rep("POP1",10),rep("POP2",10),rep("POP3",10))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="results/ALL.clst", quote=F)'`
+
+`Rscript $NGSTOOLS/Scripts/plotPCA.R -i results/matrix.covar -c 1-2 -a results/ALL.clst -o results/ALL.pca.pdf`
+
+`evince results/ALL.pca.pdf`
+##SNP calling changing the files name
+
+5. Here our plot without filters![ALL.pca.pdf]
+Here the plot with the SNP calling ![SNPALL.pca.pdf]
 
 
 
