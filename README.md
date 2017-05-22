@@ -230,7 +230,6 @@ Here our plot without filters ![ALL.pca.pdf][https://github.com/beatriceparodi/n
 
 Here the plot with the SNP calling ![SNPALL.pca.pdf][https://github.com/beatriceparodi/ngsSim-simulation/blob/master/SNPALL.pca.pdf]
 
-
 ##Admixture proportions
 ###How to calculate admixture proportions with NGSadmix 
 Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations (Skotte, Korneliussen & Albrechtsen, 2013 [http://www.genetics.org/content/195/3/693]).
