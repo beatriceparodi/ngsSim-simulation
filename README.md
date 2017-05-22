@@ -226,18 +226,56 @@ With the following commands, we are going to transform our matrix into a canonic
 
  *We can run the same commands changing the input and output files if we performed the SNP calling*
 
-5. Here our plot without filters ![ALL.pca.pdf](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/ALL.pca.pdf)
-6. Here the plot with the SNP calling ![SNPALL.pca.pdf](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/SNPALL.pca.pdf)
+Here our plot without filters ![ALL.pca.pdf][https://github.com/beatriceparodi/ngsSim-simulation/blob/master/ALL.pca.pdf]
+
+Here the plot with the SNP calling ![SNPALL.pca.pdf][https://github.com/beatriceparodi/ngsSim-simulation/blob/master/SNPALL.pca.pdf]
+
 
 ##Admixture proportions
 ###How to calculate admixture proportions with NGSadmix 
-Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancer=stral populations (Skotte, Korneliussen & Albrechtsen, 2013).
-`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/admix -nInd 30 -r chrSIM:1-100 -doMajorMinor 4 -doGlf 2 -doMaf 1  -snp_pval 1e-3 &> /dev/null`
+Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations (Skotte, Korneliussen & Albrechtsen, 2013 [http://www.genetics.org/content/195/3/693]).
 
+1. We are going to use NGSadmix, so first of all we`ll set our new directories with
 
+`$NGSADMIX=~/Software/NGSadmix`
 
+2. NGSadmix require BEAGLE files as input format. We can create them with ANGSD
+ 
+`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/admix -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doGlf 2 -doMaf 1  -snp_pval 1e-3 &> /dev/null`
 
+3. Type `$NGSADMIX` and make sure that you are familiar with filters and options available before running the admixture analysis. It will outputs arguments, setups, filters and other option that you may want to use in your command.
 
+4. Now, let's assume that we want to test our dataset for 3 ancestral components. We first need to set these with
 
+`K=3`
+
+and then we run the analysis for our admixtur proportions
+
+`$NGSADMIX -likes results/admix.beagle.gz -K $K -outfiles results/admixall -minMaf 0.0001 -seed 1 -minInd 3 &> /dev/null`
+
+4. This analysis will outputs us 3 different files:
+* admixall.log that summarises the analysis
+* admixall.fopt.gz is a compressed file containing the allele frequency in each of the 3 ancestral populations
+* admixall.qopt with a line with ancestry proportion for each individual
+
+5. Plot the admixture proportion estimates. We can use R directly from our terminal typing
+
+`R`
+
+and then plotting our barplot for admixture proportion with the following commands:
+
+`r=read.table("results/admixall.qopt")`
+
+`barplot(t(as.matrix(r,nrow=30)),beside=F , col=rainbow(3), xlab= "Individual #" , ylab= "Ancestry")`
+
+Finally, saving the plot in our results
+
+`pdf("./results/barplot.pdf")`
+
+`barplot(t(as.matrix(r,nrow=30)),beside=F, col=rainbow(3), xlab= "Individual #" , ylab= "Ancestry")`
+
+`dev.off()`
+
+Here you can see my plot, ![barpolt.pdf] [https://github.com/beatriceparodi/ngsSim-simulation/blob/master/barplot.pdf]
 
 
