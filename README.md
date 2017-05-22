@@ -226,11 +226,13 @@ With the following commands, we are going to transform our matrix into a canonic
 
  *We can run the same commands changing the input and output files if we performed the SNP calling*
 
-5. Here our plot without filters ![ALL.pca.pdf]
-6. Here the plot with the SNP calling ![SNPALL.pca.pdf]
+5. Here our plot without filters ![ALL.pca.pdf](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/ALL.pca.pdf)
+6. Here the plot with the SNP calling ![SNPALL.pca.pdf](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/SNPALL.pca.pdf)
 
 ##Admixture proportions
 ###How to calculate admixture proportions with NGSadmix 
+Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancer=stral populations (Skotte, Korneliussen & Albrechtsen, 2013).
+`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/admix -nInd 30 -r chrSIM:1-100 -doMajorMinor 4 -doGlf 2 -doMaf 1  -snp_pval 1e-3 &> /dev/null`
 
 
 
