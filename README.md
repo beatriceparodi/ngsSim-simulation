@@ -140,7 +140,7 @@ Parameter | Usage
 PCA is a useful tool when analysing genetic low-depth data.
 This statistical method will allow you to reduce your measurements into few principal components (PCs) that will explain the main pattern in your dataset (Reich, Prince & Patterson, 2008). It is a linear transformation that chooses a new system of coordinates from your original dataset, and creates new axis called principal components.
 
-You`ll find more detailed info about PCA in this [link] (http://www.nature.com/ng/journal/v40/n5/full/ng0508-491.html)
+You`ll find more detailed info about PCA in this [link] (http://www.nature.com/ng/journal/v40/n5/full/ng0508-491.html).
 
 1. To perform a PCA we first need a set of data.
 You can use data that you have collected or you can simulate your own dataset with ngsSim.
@@ -230,9 +230,9 @@ Here our plot without filters ![ALL.pca.pdf][https://github.com/beatriceparodi/n
 
 Here the plot with the SNP calling ![SNPALL.pca.pdf][https://github.com/beatriceparodi/ngsSim-simulation/blob/master/SNPALL.pca.pdf]
 
-##Admixture proportions
-###How to calculate admixture proportions with NGSadmix 
-Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations (Skotte, Korneliussen & Albrechtsen, 2013 [http://www.genetics.org/content/195/3/693]).
+## Admixture proportions
+### How to calculate admixture proportions with NGSadmix 
+Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations (Skotte, Korneliussen & Albrechtsen, 2013) [http://www.genetics.org/content/195/3/693].
 
 1. We are going to use NGSadmix, so first of all we`ll set our new directories with
 
@@ -278,3 +278,94 @@ Finally, saving the plot in our results
 Here you can see my plot, ![barpolt.pdf] [https://github.com/beatriceparodi/ngsSim-simulation/blob/master/barplot.pdf]
 
 
+## Site Frequency Spectrum (SFS)
+### How to estimate the proportions of sites at different allele frequencies
+Site frequency spectrum is the distribution of the alelle frequencies of a given set of loci in a population, and represent one of the most powerful method for summarising genomic data (Ronen *et al*, 2013),[https://www.ncbi.nlm.nih.gov/pubmed/23770700].
+
+With the following commands, we are going to use ANGSD and a simulated dataset with 3 populations of 10 individuals each.
+
+1. First of all, we are going to perform our analysis for each population separately with 
+
+`for POP in pop1 pop2 pop3`
+
+`do`
+
+    `echo $POP`
+
+    `$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -out results/$POP    -nInd 10 -doglf 1 -anc Data/ref.fasta -doSaf 1 &> /dev/null`
+
+`done`
+
+Take a look at the output (for instance at pop1) with
+
+`$ANGSD/misc/realSFS print results/sfspop1.saf.idx | less -S`
+
+You should see a table with different values. For example my output is 
+
+*chrSIM  113  |  -78.105034   |  -56.263031   |  -44.215683  |  -33.021896* 
+
+These represent the allele frequency likelihoods per each site. In my case, for chromosome 113,the first value represent the likelihood of having 0 copies of the derived allele, the second value the likelihood of having 1 copy and so on..
+
+2. Now, we are going to perform our SFS with `realSFS`. 
+Type `$ANGSD/misc/realSFS` and make sure that you have understood all the options available for this program.
+
+Then, run the analysis with
+
+`for POP in sfspop1 sfspop2 sfspop3`
+
+`do`
+
+   `echo $POP`
+    
+    `$ANGSD/misc/realSFS results/$POP.saf.idx 2> /dev/null > results/$POP.sfs`
+
+`done`
+
+Once again, look at the output that we have:
+
+`cat results/sfspop1.sfs`
+
+Here, for instance, what I have
+
+*9478.656514 81.942662 45.773892 99.836446 1.958466 80.032460 11.068303 2.324720 58.955779 21.461398 0.000507 0.003621 40.847895 0.000000 28.613466 11.044443 0.000000 0.000000 27.445907 0.000143 10.033377*
+
+These values are the expected number of sites with derived allele frequency equal to 0 (first number), 1 (second number), 2 (third number)... in my first population.
+
+3. You can finally plot your results in R
+
+`Rscript $NGSTOOLS/Scripts/plotSFS.R results/sfspop1.sfs results/sfspop2.sfs results/sfspop3.sfs`
+
+`evince results/pop1-2-3.pdf`
+
+4. Generate replicates may help you to get confidence intervals when studing populations demography. Here how to perform a bootstrapped replicates of the SFS
+
+`$ANGSD/misc/realSFS results/sfspop1.saf.idx -bootstrap 10  2> /dev/null > results/pop1.boots.sfs`
+
+`cat Results/pop1.boots.sfs`
+
+5. Also, you can estimate a multi-dimensional SFS, for example the joint SFS between two (2D) or three (3D) populations. This could help you while studying the divergence processes (for instance, if you want to track back two or more species to their common ancestor after a migration).
+
+When running this analysis **make sure that you are comparing exactly the same sites** between populations. 
+Let's start with 2D SFS between pop1 and all other populations, and after that we'll move to a 3D SFS comparison.
+
+`for POP in sfspop2 sfspop3`
+
+`do`
+
+   `echo $POP`
+    
+    `$ANGSD/misc/realSFS results/$POP.saf.idx results/sfspop1.saf.idx 2> /dev/null > results/$POP.pop1.sfs`
+
+`done`
+
+Or between population 2 and 3:
+
+`$ANGSD/misc/realSFS results/sfspop2.saf.idx results/sfspop3.saf.idx 2> /dev/null > results/pop2.pop3.sfs`
+
+6. Now plot yopur results with R, and make sure that you have the rigth number of samples per population (for instance, I have 10 individuals for each population)
+
+`Rscript $NGSTOOLS/Scripts/plot2DSFS.R Results/pop2.pop3.sfs 10 10`
+
+7. You may want to perform a 3D SFS. The command is:
+
+`$ANGSD/misc/realSFS results/sfspop1.saf.idx results/sfspop2.saf.idx results/sfspop3.saf.idx 2> /dev/null > results/pop1.pop2.pop3.sfs`
