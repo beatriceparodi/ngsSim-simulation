@@ -337,6 +337,8 @@ These values are the expected number of sites with derived allele frequency equa
 
 `evince results/pop1-2-3.pdf`
 
+Here my plot [https://github.com/beatriceparodi/ngsSim-simulation/blob/master/sfspop1_sfspop2_sfspop3.pdf]
+
 4. Generate replicates may help you to get confidence intervals when studing populations demography. Here how to perform a bootstrapped replicates of the SFS
 
 `$ANGSD/misc/realSFS results/sfspop1.saf.idx -bootstrap 10  2> /dev/null > results/pop1.boots.sfs`
@@ -366,6 +368,12 @@ Or between population 2 and 3:
 
 `Rscript $NGSTOOLS/Scripts/plot2DSFS.R Results/pop2.pop3.sfs 10 10`
 
+Here a link to my plot [https://github.com/beatriceparodi/ngsSim-simulation/blob/master/pop2.pop3.sfs.pdf]
+
 7. You may want to perform a 3D SFS. The command is:
 
 `$ANGSD/misc/realSFS results/sfspop1.saf.idx results/sfspop2.saf.idx results/sfspop3.saf.idx 2> /dev/null > results/pop1.pop2.pop3.sfs`
+
+
+
+
