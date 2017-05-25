@@ -343,7 +343,7 @@ Take a look at the output (for instance at pop1) with
 
 You should see a table with different values. For example my output is 
 
-*chrSIM  113  |  -78.105034   |  -56.263031   |  -44.215683  |  -33.021896* 
+**chrSIM  113  |  -78.105034   |  -56.263031   |  -44.215683  |  -33.021896**
 
 These represent the allele frequency likelihoods per each site. In my case, for chromosome 113,the first value represent the likelihood of having 0 copies of the derived allele, the second value the likelihood of having 1 copy and so on..
 
@@ -372,7 +372,7 @@ Once again, look at the output that we have:
 
 Here, for instance, what I have
 
-*9478.656514 81.942662 45.773892 99.836446 1.958466 80.032460 11.068303 2.324720 58.955779 21.461398 0.000507 0.003621 40.847895 0.000000 28.613466 11.044443 0.000000 0.000000 27.445907 0.000143 10.033377*
+**9478.656514 81.942662 45.773892 99.836446 1.958466 80.032460 11.068303 2.324720 58.955779 21.461398 0.000507 0.003621 40.847895 0.000000 28.613466 11.044443 0.000000 0.000000 27.445907 0.000143 10.033377**
 
 These values are the expected number of sites with derived allele frequency equal to 0 (first number), 1 (second number), 2 (third number)... in my first population.
 
@@ -459,12 +459,12 @@ and look at your output with
 
 Here what I have found:
 
-*chrSIM  21   |   0.000000    |    0.000000    |    0.120467   |    0.348769* 
+**chrSIM  21   |   0.000000    |    0.000000    |    0.120467   |    0.348769**
 
 In the first column you can see the chromosome and it position, (a) and the values for the three FST comparisons.
 As you can see if you take a look at the whole output, FST value range from 0 to 1, where 0 means complete sharing of genetic traits and 1 means no sharing at all.
 
-2. Now we are going to performa sliding window analysis
+2. Now we are going to perform a [sliding window analysis](https://oup.silverchair-cdn.com/oup/backfile/Content_public/Journal/bioinformatics/14/5/10.1093_bioinformatics_14.5.467/1/140467.pdf?Expires=1495818788&Signature=CpuZVvrrJz9CGkX9lC6l8y3OsVsqx7a84u1q2FKZKgW2uYGViPILt5ihk3M9d2DeKQvuQfsZLTN3u0FAFD5JjwHreKHezYVL-1I8f1kZ74Vt9YQAkjfbeClX7owfMR8~0eB419tiorEQnjbQvWK4Uj5lzVlkxU9VEqhwLVtYptdx~saKk-XDv4n8rPbYXBjchhWxfAatcv5J-DiHuCG7BANj4HiTfmqprUhfXcK-2AsCIqRhKJV~YQeVvpvH7360XU5LT~xV2qVgZOhuKoiIGvqcpCrHUsjkNw0I5NPUsUeH1vgb1IsdtdUHCUUbyX-9NGjtxB3EjoIXhTfsvH2Y8Q__&Key-Pair-Id=APKAIUCZBIA4LVPAVW3Q). With this method, data are plotted as moving averages of a particular criterion, such as the number of changing nucleotides, for a window of a certain length
 
 
 `$ANGSD/misc/realSFS fst stats2 results/FSTpop1.pbs.fst.idx -win 50000 -step 10000 > results/FSTpop.pbs.txt`
@@ -475,10 +475,9 @@ And again take a look at the output
 
 `less -S results/FSTpop.pbs.txt`
 
+You'll see the following headers:
 
-*region  chr   midPos  Nsites  Fst01   Fst02   Fst12   PBS0    PBS1    PBS2*
-
-*(9999,9999)(10000,10000)(10000,60000)   chrSIM  35000   2       0.025738*
+**region  chr   midPos  Nsites  Fst01   Fst02   Fst12   PBS0    PBS1    PBS2**
 
 PBS values are given assuming a target population (in my case population 1), and represent the differentiation between populations.
 
