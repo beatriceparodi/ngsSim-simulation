@@ -13,18 +13,22 @@ ngsSim will outputs different files:
 
 1. First of all, **make sure that you have set your directories**. This will allow you to easily understand where data and results are. For instance, my directories are: 
 
+
 `mkdir Data`
 
 `mkdir results`
 
+
 2. Now we need to set directories for all programs that we are going to use in this simulation. 
 Again, **make sure that you know where these programs are installed** in your computer. My paths are, for example:
+
 
 `NGSTOOLS=~/Software/ngsTools`
 
 `SAMTOOLS=~/Software/samtools-1.4.1/samtools`
 
 `ANGSD=~/Software/angsd`
+
 
 3. Now, what kind of data do we want to simulate?
 
@@ -45,16 +49,21 @@ Here my parameters:
   
 1. First, set the sites number
 
+
 `NSITES=10000`
+
 
 2. Second, what about the depth?
 If you want to generate data with all the same depth, for instance 4x, you`ll have `-depth 4` . Otherwise, if you want to generate data with individual depths per line, here what you need to do:
 
   * Set a path for your depths with 
 
+
 `DEPTH=Data/depths.txt`
 
+
   * Create a file with individual depths per line. In this example, I want to generate a file with repetition of 2x and 5x per 30 individuals.
+
 
 `declare -a seq1=(2 5 2 5 2 5)`
 
@@ -78,11 +87,14 @@ If you want to generate data with all the same depth, for instance 4x, you`ll ha
 
 `done`
 
+
 *Alternatively, for a small amount of data, you can simply create a .txt file and manually insert the depths per individual, one each line*
 
 3. Run the simulation with ngsSim, and **make sure to remember your directories**
 
+
 `$NGSTOOLS/ngsSim/ngsSim -outfiles Data/pop -npop 3 -nind 10 10 10 -nsites $NSITES -depth $DEPTH -errate 0.01 -pvar 0.10 -mfreq 0.005 -F 0.1 0.3 -model 1 -base_freq 0.25 0.25 0.25 0.25 -seed 12345 2> /dev/null`
+
 
 *You can find all the parameters that you might want to use for your simulation in the following table:*
 
@@ -105,13 +117,17 @@ Parameter | Usage
 
 4. Create a simulate sequence with an index
 
+
 `perl -s -e 'print(">chrSIM\n".("A"x$n)."\n");' -- -n=$NSITES > Data/ref.fasta`
 
 `$SAMTOOLS faidx Data/ref.fasta`
 
+
 5. Now that we have a dataset, we want to investigate it using `ANGSD`
 
+
 `$ANGSD/angsd -glf Data/pop.glf.gz -fai Data/ref.fasta.fai -nInd 30 -doMajorMinor 1 -doMaf 1 -doPost 1 -doGeno 1 -doSaf 1 -anc data/ref.fasta -out testA`
+
 
 *Check the table below for parameters*
 
@@ -173,42 +189,58 @@ You can combine the output by summing the numbers. For instance, `-doGeno9`(1+8)
     
 2. Before running the analyses remember to unzip the files that you want to use (for instance,I'm going to use the whole population) with `gunzip`: 
 
+
 `gunzip Data/pop.glf.gz`
+
 
 and then we can calculate the genotype probabilities. In this specific case, since we need a binary file for the PCA, we must specify `-doGeno32`. So the command line will be:
 
+
 `$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/all -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -doGeno 32 -doPost 1`
+
 
 If we need to filter sites that are actually variable (for instance, replacement of a base with another) in our samples, wee need to add SNP_pval, as shown below:
  
+
 `$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out SNP/SNPall -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doMaf 1 -SNP_pval 1e-3 -doGeno 32 -doPost 1`
+
 
 You can use the command `-r` if you want to filter the data. In my case I am only analysing chromosome 1-100
 
 3. ngsCovar will allow us to estimate the covariance matrix between individuals based on genotypes probabilities. Since the data are simulated, I am not using any filter, and I can type the initial number of sites (NSITES=10000).
 
+
 `$NGSTOOLS/ngsPopGen/ngsCovar -probfile results/ALL.geno -outfile results/matrix.covar -nind 30 -nsites 10000 -call 0 -norm 0 &> /dev/null`
 
+
 If we performed a SNP calling, we need to know how many sites we are taking into consideration (581 in my case). We can see them  with these commands
+
 
 `less -S SNP/SNPall.mafs.gz`
 `N_SITES=`zcat SNP/SNPall.mafs.gz | tail -n+2 | wc -l``
 `echo $N_SITES`
 
+
 Then we can run the matrix calculation
 
+
 `$NGSTOOLS/ngsPopGen/ngsCovar -probfile SNP/SNPall.geno -outfile SNP/SNPmatrix.covar -nind 30 -nsites $N_SITES -call 0 -norm 0 &> /dev/null`
+
 
 Here,looking at the outup, we can see a NxN symmetric matrix with N individials 
 
 4. Now that we have our covariance matrix, we can use the command `Rscript` to perform a PCA plot in R directly from our terminal.
 With the following commands, we are going to transform our matrix into a canonical form, then create a cluster file (.clst) and plot the results.
 
+
 `Rscript -e 'write.table(cbind(seq(1,30),rep(1,30),c(rep("POP1",10),rep("POP2",10),rep("POP3",10))), row.names=F, sep=" ", col.names=c("FID","IID","CLUSTER"), file="results/ALL.clst", quote=F)'`
+
 
 `Rscript $NGSTOOLS/Scripts/plotPCA.R -i results/matrix.covar -c 1-2 -a results/ALL.clst -o results/ALL.pca.pdf`
 
+
 `evince results/ALL.pca.pdf`
+
 
  *We can run the same commands changing the input and output files if we performed the SNP calling*
 
@@ -219,26 +251,34 @@ With the following commands, we are going to transform our matrix into a canonic
 
 ## Admixture proportions
 ### How to calculate admixture proportions with NGSadmix 
-Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations 
+Admixture occurs while populations begin interbreeding, and their offsprings represent a mixture of alleles from different ancestral populations. 
 [Here](http://www.genetics.org/content/195/3/693) a useful paper.
 
 1. We are going to use NGSadmix, so first of all we`ll set our new directories with
 
+
 `$NGSADMIX=~/Software/NGSadmix`
+
 
 2. NGSadmix require BEAGLE files as input format. We can create them with ANGSD
  
+
 `$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -out results/admix -nInd 30 -r chrSIM:1-100 -doMajorMinor 1 -doGlf 2 -doMaf 1  -snp_pval 1e-3 &> /dev/null`
+
 
 3. Type `$NGSADMIX` and make sure that you are familiar with filters and options available before running the admixture analysis. It will outputs arguments, setups, filters and other option that you may want to use in your command.
 
 4. Now, let's assume that we want to test our dataset for 3 ancestral components. We first need to set these with
 
+
 `K=3`
+
 
 and then we run the analysis for our admixtur proportions
 
+
 `$NGSADMIX -likes results/admix.beagle.gz -K $K -outfiles results/admixall -minMaf 0.0001 -seed 1 -minInd 3 &> /dev/null`
+
 
 4. This analysis will outputs us 3 different files:
 * admixall.log that summarises the analysis
@@ -247,19 +287,27 @@ and then we run the analysis for our admixtur proportions
 
 5. Plot the admixture proportion estimates. We can use R directly from our terminal typing
 
+
 `R`
+
 
 and then plotting our barplot for admixture proportion with the following commands:
 
+
 `r=read.table("results/admixall.qopt")`
+
 
 `barplot(t(as.matrix(r,nrow=30)),beside=F , col=rainbow(3), xlab= "Individual #" , ylab= "Ancestry")`
 
+
 Finally, saving the plot in our results
+
 
 `pdf("./results/barplot.pdf")`
 
+
 `barplot(t(as.matrix(r,nrow=30)),beside=F, col=rainbow(3), xlab= "Individual #" , ylab= "Ancestry")`
+
 
 `dev.off()`
 
@@ -268,12 +316,13 @@ You can see my plot in this [link](https://github.com/beatriceparodi/ngsSim-simu
 
 ## Summary statistics: Site Frequency Spectrum (SFS)
 ### How to estimate the proportions of sites at different allele frequencies with ANGSD
-Site frequency spectrum is the distribution of the alelle frequencies of a given set of loci in a population, and represent one of the most powerful method for summarising genomic data 
+Site frequency spectrum is the distribution of the alelle frequencies of a given set of loci in a population, and represent one of the most powerful method for summarising genomic data. 
 More info about SFS in this [link](https://www.ncbi.nlm.nih.gov/pubmed/23770700).
 
 With the following commands, we are going to use ANGSD and a simulated dataset with 3 populations of 10 individuals each.
 
 1. First of all, we are going to perform our analysis for each population separately with 
+
 
 `for POP in pop1 pop2 pop3`
 
@@ -285,9 +334,12 @@ With the following commands, we are going to use ANGSD and a simulated dataset w
 
 `done`
 
+
 Take a look at the output (for instance at pop1) with
 
+
 `$ANGSD/misc/realSFS print results/sfspop1.saf.idx | less -S`
+
 
 You should see a table with different values. For example my output is 
 
@@ -300,6 +352,7 @@ Type `$ANGSD/misc/realSFS` and make sure that you have understood all the option
 
 Then, run the analysis with
 
+
 `for POP in sfspop1 sfspop2 sfspop3`
 
 `do`
@@ -310,9 +363,12 @@ Then, run the analysis with
 
 `done`
 
+
 Once again, look at the output that we have:
 
+
 `cat results/sfspop1.sfs`
+
 
 Here, for instance, what I have
 
@@ -322,22 +378,29 @@ These values are the expected number of sites with derived allele frequency equa
 
 3. You can finally plot your results in R
 
+
 `Rscript $NGSTOOLS/Scripts/plotSFS.R results/sfspop1.sfs results/sfspop2.sfs results/sfspop3.sfs`
 
+
 `evince results/pop1-2-3.pdf`
+
 
 [Here](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/sfspop1_sfspop2_sfspop3.pdf) my plot
 
 4. Generate replicates may help you to get confidence intervals when studing populations demography. Here how to perform a bootstrapped replicates of the SFS
 
+
 `$ANGSD/misc/realSFS results/sfspop1.saf.idx -bootstrap 10  2> /dev/null > results/pop1.boots.sfs`
 
+
 `cat Results/pop1.boots.sfs`
+
 
 5. Also, you can estimate a multi-dimensional SFS, for example the joint SFS between two (2D) or three (3D) populations. This could help you while studying the divergence processes (for instance, if you want to track back two or more species to their common ancestor after a migration).
 
 When running this analysis **make sure that you are comparing exactly the same sites** between populations. 
 Let's start with 2D SFS between pop1 and all other populations, and after that we'll move to a 3D SFS comparison.
+
 
 `for POP in sfspop2 sfspop3`
 
@@ -349,23 +412,32 @@ Let's start with 2D SFS between pop1 and all other populations, and after that w
 
 `done`
 
+
 Between population 2 and 3:
+
 
 `$ANGSD/misc/realSFS results/sfspop2.saf.idx results/sfspop3.saf.idx 2> /dev/null > results/pop2.pop3.sfs`
 
+
 Between population 3 and 1:
+
 
 `$ANGSD/misc/realSFS results/sfspop3.saf.idx results/sfspop1.saf.idx 2> /dev/null > results/pop3.pop1.sfs`
 
+
 6. Now plot yopur results with R, and make sure that you have the rigth number of samples per population (for instance, I have 10 individuals for each population)
 
+
 `Rscript $NGSTOOLS/Scripts/plot2DSFS.R Results/pop2.pop3.sfs 10 10`
+
 
 Here a [link](https://github.com/beatriceparodi/ngsSim-simulation/blob/master/pop2.pop3.sfs.pdf) to my plot 
 
 7. You may want to perform a 3D SFS. The command is:
 
+
 `$ANGSD/misc/realSFS results/sfspop1.saf.idx results/sfspop2.saf.idx results/sfspop3.saf.idx 2> /dev/null > results/pop1.pop2.pop3.sfs`
+
 
 ## Fixation index (FST) and population branch statistics (PBS)
 ### Population genetic differentiation using ANGSD
@@ -375,11 +447,15 @@ More info about [FST](http://php.scripts.psu.edu/users/n/x/nxm2/1977%20Publicati
 
 1. Compute per site FST index with the following command:
 
+
 `$ANGSD/misc/realSFS fst index results/sfspop2.saf.idx results/sfspop3.saf.idx results/sfspop1.saf.idx -sfs results/pop2.pop3.sfs -sfs results/pop2.pop1.sfs -sfs results/pop3.pop1.sfs -fstout results/FSTpop1.pbs`
+
 
 and look at your output with
 
+
 `$ANGSD/misc/realSFS fst print results/FSTpop1.pbs.fst.idx | less -S`
+
 
 Here what I have found:
 
@@ -390,9 +466,12 @@ As you can see if you take a look at the whole output, FST value range from 0 to
 
 2. Now we are going to performa sliding window analysis
 
+
 `$ANGSD/misc/realSFS fst stats2 results/FSTpop1.pbs.fst.idx -win 50000 -step 10000 > results/FSTpop.pbs.txt`
 
+
 And again take a look at the output 
+
 
 `less -S results/FSTpop.pbs.txt`
 
@@ -402,6 +481,7 @@ And again take a look at the output
 *(9999,9999)(10000,10000)(10000,60000)   chrSIM  35000   2       0.025738*
 
 PBS values are given assuming a target population (in my case population 1), and represent the differentiation between populations.
+
 
 `$ANGSD/misc/realSFS fst index results/sfspop2.saf.idx results/sfspop3.saf.idx -sfs results/pop2.pop3.sfs -fstout results/POP2.POP3`
 
@@ -414,6 +494,7 @@ It may provide valuable information when studying demographic history of populat
 
 1. First, we have to compute the allele frequency posterior probabilities and associated statistics (-doThetas). SFS is used to calculate these as a proor information (-pest).
 
+
 `for POP in pop1 pop2 pop3`
 
 `do`
@@ -424,7 +505,9 @@ It may provide valuable information when studying demographic history of populat
 
 `done`
 
-2. We need to index these files with the following commands, then perform a sliding-window analysis
+
+2. We need to index these files with the following commands, then perform a sliding-window analysis. The third line will allow you to index files and the following will perform the sliding-window analysis. 
+
 
 `for POP in pop1 pop2 pop3`
 
@@ -436,9 +519,12 @@ It may provide valuable information when studying demographic history of populat
 
   `$ANGSD/misc/thetaStat do_stat results/nd$POP.thetas.idx -win 5000 -step 5000 -   outnames results/$POP.thetas`
 
+
 and have a look at the output (for instance I want too see population 3) with
 
+
 `less -S results/pop3.thetas.pestPG`
+
 
 The first colums contains information about region, the second and the third are reference name and centre of window.
 Then we have 5 different Theta estimators (Watterson, pairwise, FuLi, fayH, L) and 5 neutrality test statistics (Tajima's D, Fu&Li, F's, Fu&li's D Fay's H, Zeng's).
