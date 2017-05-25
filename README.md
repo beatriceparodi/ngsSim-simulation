@@ -353,13 +353,13 @@ Type `$ANGSD/misc/realSFS` and make sure that you have understood all the option
 Then, run the analysis with
 
 
-`for POP in sfspop1 sfspop2 sfspop3`
+`for POP in pop1 pop2 pop3`
 
 `do`
 
    `echo $POP`
     
-    `$ANGSD/misc/realSFS results/$POP.saf.idx 2> /dev/null > results/$POP.sfs`
+    `$ANGSD/misc/realSFS results/sfs$POP.saf.idx 2> /dev/null > results/$POP.sfs`
 
 `done`
 
@@ -402,13 +402,13 @@ When running this analysis **make sure that you are comparing exactly the same s
 Let's start with 2D SFS between pop1 and all other populations, and after that we'll move to a 3D SFS comparison.
 
 
-`for POP in sfspop2 sfspop3`
+`for POP in pop2 pop3`
 
 `do`
 
    `echo $POP`
     
-    `$ANGSD/misc/realSFS results/$POP.saf.idx results/sfspop1.saf.idx 2> /dev/null > results/$POP.pop1.sfs`
+    `$ANGSD/misc/realSFS results/sfs$POP.saf.idx results/sfspop1.saf.idx 2> /dev/null > results/$POP.pop1.sfs`
 
 `done`
 
@@ -475,6 +475,7 @@ And again take a look at the output
 
 `less -S results/FSTpop.pbs.txt`
 
+
 You'll see the following headers:
 
 **region  chr   midPos  Nsites  Fst01   Fst02   Fst12   PBS0    PBS1    PBS2**
@@ -528,9 +529,32 @@ and have a look at the output (for instance I want too see population 3) with
 The first colums contains information about region, the second and the third are reference name and centre of window.
 Then we have 5 different Theta estimators (Watterson, pairwise, FuLi, fayH, L) and 5 neutrality test statistics (Tajima's D, Fu&Li, F's, Fu&li's D Fay's H, Zeng's).
 
+3. You may be interested in calculate allele frequencies for single SNPs.
+ANGSD will allow you to choose a subset of positions using `-sites` option. 
+IN this case, you'll have to create a .txt file with your position, and then create an index with
+
+`$ANGSD/angsd sites index Data/snps.txt`
+
+Then, we are going to use`-doMajorMinor5` to polarise our alleles. 
 
 
+`for POP in pop1 pop2 pop3`
 
 
+`do`
+
+
+`echo $POP`
+
+`$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -anc Data/ref.fasta -out results/sites$POP -doglf 1 -nInd 10 -doMajorMinor 5 -doMaf 1 -sites Data/snps.txt` 
+
+
+`done`
+
+
+Finally, we can have a look at our output with
+
+
+`zcat results/sitespop3.mafs.gz`
 
 
