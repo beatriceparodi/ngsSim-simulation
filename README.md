@@ -499,9 +499,9 @@ It may provide valuable information when studying demographic history of populat
 
 `do`
 
-   `echo $POP`
+    `echo $POP`
    
-   `$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -out results/nd$POP   -nInd 10 -minInd 3 -doglf 1 -doSaf 1 -doThetas 1 -pest results/sfs$POP.sfs`
+    `$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -out results/nd$POP   -nInd 10 -minInd 3 -doglf 1 -doSaf 1 -doThetas 1 -pest results/sfs$POP.sfs`
 
 `done`
 
@@ -513,11 +513,14 @@ It may provide valuable information when studying demographic history of populat
 
 `do`
 
-  `echo $POP`
+    `echo $POP`
   
    `$ANGSD/misc/thetaStat print results/nd$POP.glf.gz`
 
   `$ANGSD/misc/thetaStat do_stat results/nd$POP.thetas.idx -win 5000 -step 5000 -   outnames results/$POP.thetas`
+
+
+`done`
 
 
 and have a look at the output (for instance I want too see population 3) with
@@ -533,7 +536,9 @@ Then we have 5 different Theta estimators (Watterson, pairwise, FuLi, fayH, L) a
 ANGSD will allow you to choose a subset of positions using `-sites` option. 
 IN this case, you'll have to create a .txt file with your position, and then create an index with
 
+
 `$ANGSD/angsd sites index Data/snps.txt`
+
 
 Then, we are going to use`-doMajorMinor5` to polarise our alleles. 
 
@@ -544,9 +549,9 @@ Then, we are going to use`-doMajorMinor5` to polarise our alleles.
 `do`
 
 
-`echo $POP`
+   `echo $POP`
 
-`$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -anc Data/ref.fasta -out results/sites$POP -doglf 1 -nInd 10 -doMajorMinor 5 -doMaf 1 -sites Data/snps.txt` 
+    `$ANGSD/angsd -glf Data/$POP.glf -fai Data/ref.fasta.fai -anc Data/  ref.fasta -out results/sites$POP -doglf 1 -nInd 10 -doMajorMinor 5 -doMaf 1 -sites Data/snps.txt` 
 
 
 `done`
@@ -557,4 +562,65 @@ Finally, we can have a look at our output with
 
 `zcat results/sitespop3.mafs.gz`
 
+## ngsLD
+### Linkage disequilibrium with ngsLD
+Linkage disequilibrium (LD) refers to the nonrandom association of alleles in haplotypes. In genreal, you'll found that chromosomes sampled from non-related individuals are much more distantly related than those sampled from members of, for example, closed populations.
 
+[Here](https://www.ncbi.nlm.nih.gov/pubmed/11818140) more info about linkage disequilibrium.
+ 
+With ngsLD you can estimate pairwise LD taking into account the uncertainty of genotype's assignation by using genotype likelihoods or posterior probabilities.
+
+1. We have to create a reference file with the site coordinates with 
+
+
+`cat $SIM_DATA/testA.geno | perl -s -p -e 's/0 0/0/g; s/(\w) \1/2/g; s/\w \w/1/g; $n=s/2/2/g; tr/02/20/ if($n>$n_ind/2)' -- -n_ind=$N_IND | awk '{print "chrSIM\t"NR"\t"$0}' | gzip -cfn --best > testLD_T.geno.gz`
+
+
+`zcat testLD_T.geno.gz | awk 'BEGIN{cnt=1} pos > 10000 {pos=0; cnt++} {pos+=int(rand()*1000+1); print $1"_"cnt"\t"pos}' > testLD.pos`
+
+
+3. Then, use ANGSD and the option `-doGeno32` 
+
+
+`$ANGSD/angsd -glf Data/pop.glf -fai Data/ref.fasta.fai -nInd 30 -doMajorMinor 1 -doPost 1 -doMaf 1 -doGeno 32 -out results/testLD_32`
+
+
+4. Unzip the output with
+
+
+`gunzip -f testLD_32.geno.gz`
+
+Before running the analysis, let's have a look at the parameters available for ngsLD
+
+Parameter | Usage
+--------- | -------
+`--geno FILE` |  input file with genotypes, genotype likelihoods or genotype posterior probabilities
+`--probs`| is the input genotype probabilities (likelihoods or posteriors)?
+`--log_scale`| if the input in log-scale
+`--n_ind INT`| sample size (number of individuals)
+`--n_sites INT`| total number of sites
+`--pos` | input file with site coordinates
+`--max_kb_dist DOUBLE`| maximum distance between SNPs (in Kb) to calculate LD. If set to 0 (zero) will perform all comparisons
+`--max_snp_dist INT`| maximum distance between SNPs (in number of SNPs) to calculate LD. If set to 0 (zero) will perform all comparisons
+`--min_maf DOUBLE` | minimum SNP minor allele frequency
+`--call_geno` | call genotypes before running analyses
+`--N_thresh DOUBLE` |  minimum threshold to consider site; missing data if otherwise (assumes -call_geno)
+`--call_thresh DOUBLE` |  minimum threshold to call genotype; left as is if otherwise (assumes -call_geno)
+`--rnd_sample DOUBLE` | proportion of comparisons to randomly sample
+`--seed INT` | random number generator seed for random sampling (--rnd_sample)
+`--out FILE` | output file name
+`--n_threads INT` |  number of threads to use
+`--version` |  prints program version and exits
+`--verbose INT` | selects verbosity level
+
+
+5. Perform the analysis with ngsLD. The option `-prob` will allow you to take genotype likelihoods or posterior probabilities into account
+
+
+`$NGSLD --geno results/testLD_32.geno --n_ind 30 --n_sites 10000 --probs --pos testLD.pos --out results/LDpop`
+
+6. Now we can have a look at our output with 
+
+`cat LDpop`
+
+You'll see results for all pairs of sites for which LD was calculated as: site1 label, site2 label, distance between sites (bp), r^2 from pearson correlation between expected genotypes, D from EM algorithm, D' from EM algorithm, and r^2 from EM algorithm.
