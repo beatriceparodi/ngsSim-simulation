@@ -29,6 +29,7 @@ Again, **make sure that you know where these programs are installed** in your co
 
 `ANGSD=~/Software/angsd`
 
+`NGSLD=~/Software/ngsLD`
 
 3. Now, what kind of data do we want to simulate?
 
@@ -174,8 +175,8 @@ You can combine the output by summing the numbers. For instance, `-doGeno9`(1+8)
 
  * `-doMaf1` calculate the frequency of major and minor allele, based on EM     algorithm with genotypes likelihood
  * `-doMaf2` calculate frequency with only fixed major and unknown minor allele
-    `-doMaf4` calculate the frequencies directly from genotype posterior probabilities
-    `-doMaf8` calculate frequencies based in allele counts
+ * `-doMaf4` calculate the frequencies directly from genotype posterior probabilities
+ * `-doMaf8` calculate frequencies based in allele counts
 
 `-doMajorMinor` will nallow you to assign the major and minor alleles. Options are available:
 
@@ -209,6 +210,11 @@ You can use the command `-r` if you want to filter the data. In my case I am onl
 
 3. ngsCovar will allow us to estimate the covariance matrix between individuals based on genotypes probabilities. Since the data are simulated, I am not using any filter, and I can type the initial number of sites (NSITES=10000).
 
+Before running the ngsCovar, we need to gunzip our geno.gz files with
+
+`gunzip results/ALL.geno.gz`
+
+and then we can calculate the covariance matrix with 
 
 `$NGSTOOLS/ngsPopGen/ngsCovar -probfile results/ALL.geno -outfile results/matrix.covar -nind 30 -nsites 10000 -call 0 -norm 0 &> /dev/null`
 
@@ -615,7 +621,6 @@ Parameter | Usage
 
 
 5. Perform the analysis with ngsLD. The option `-prob` will allow you to take genotype likelihoods or posterior probabilities into account
-
 
 `$NGSLD --geno results/testLD_32.geno --n_ind 30 --n_sites 10000 --probs --pos testLD.pos --out results/LDpop`
 
